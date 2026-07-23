@@ -1842,6 +1842,9 @@
                     </div>
                   </div>
                 </sc-if>
+                <sc-if value="{{ u.canDelete }}" hint-placeholder-val="{{ false }}">
+                  <button sc-camel-on-click="{{ u.deleteUser }}" style="border:1px solid #f2dedd;background:#fff;color:#c02020;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer">ลบบัญชี</button>
+                </sc-if>
               </div>
             </div>
           </sc-for>
@@ -2226,7 +2229,7 @@
 class Component extends DCLogic {
   state = { loggedIn: false, loginUser: '', loginPw: '', loginRole: null, loginError: false, loginErrorMsg: '', loginPwVisible: false, loginMode: 'login', regDone: false, otpStage: false, pendingRole: null, otpResent: false, otpChannel: null, view: 'dashboard', role: 'manager', panelId: null, formStep: 1, managerFilter: 'all', editMode: false, draft: null, newPlanTask: '', newPlanDue: '', addUserOpen: false, resetUserId: null, twoFAActive: ['app'], profileSaved: false, profileEdit: false, twoFASetup: null, authAppSel: 'google', otpSent: false, docPreviewOpen: false, resetChooser: null, adminPwUser: null, adminPwInput: '', resetDoneId: null, resetDoneMode: null, pwMode: 'direct', pwInput: '', tempPw: '', pwVisible: false, adminPwVisible: false, docTab: 'all', docSearch: '', dealTab: 'all', dealSearch: '', custSearch: '', custDetailId: null, custAddOpen: false,
     // real-identity fields, populated from the backend on login (see refreshMe())
-    identityRole: null, identityName: '', identityEmail: '', identityPerms: {}, tempToken: null, usersBusy: false };
+    identityId: null, identityRole: null, identityName: '', identityEmail: '', identityPerms: {}, tempToken: null, usersBusy: false };
 
   // Base URL of the Phase-1 auth/users backend. Point this at wherever
   // `backend/` is deployed; same-origin deployments can leave this as ''.
@@ -2258,6 +2261,7 @@ class Component extends DCLogic {
     const { user } = await this.api('/auth/me');
     this.setState({
       loggedIn: true,
+      identityId: user.id,
       identityRole: user.role,
       identityName: user.name,
       identityEmail: user.email,
@@ -2284,6 +2288,28 @@ class Component extends DCLogic {
     if (user.role === 'superadmin' || user.perms?.addUser) {
       this.refreshSecuritySettings().catch(() => {});
     }
+  }
+
+  // In-session-editable draft for the "My Account" profile screen, seeded
+  // from the real logged-in identity. Not persisted to the backend (no
+  // columns exist yet for phone/position/empType/level/doc) — resets if the
+  // logged-in identity changes.
+  getProfileDraft() {
+    if (!this.profileDraft || this.profileDraft._forId !== this.state.identityId) {
+      const name = this.state.identityName || '';
+      const [firstTh, ...rest] = name.split(' ');
+      const lastTh = rest.join(' ');
+      const defaults = this.roleProfileDefaults[this.state.identityRole] || this.roleProfileDefaults.sales;
+      this.profileDraft = {
+        _forId: this.state.identityId,
+        titleTh: '', firstTh: firstTh || '', lastTh: lastTh || '',
+        titleEn: '', firstEn: firstTh || '', lastEn: lastTh || '',
+        phone: '-', email: this.state.identityEmail || '',
+        position: defaults.position, empType: defaults.empType, level: defaults.level,
+        doc: '-',
+      };
+    }
+    return this.profileDraft;
   }
 
   async refreshSecuritySettings() {
@@ -2465,12 +2491,17 @@ class Component extends DCLogic {
   ];
   newEmp = {};
 
-  myProfiles = {
-    sales: { titleTh:'นาย', firstTh:'สมชาย', lastTh:'วงศ์ไพศาล', titleEn:'Mr.', firstEn:'Somchai', lastEn:'Wongpaisan', phone:'081-234-5678', email:'somchai@company.co.th', position:'Senior Sales Executive', empType:'พนักงานประจำ', level:'Senior', doc:'สัญญาจ้าง_สมชาย.pdf' },
-    executive: { titleTh:'นาย', firstTh:'วิชัย', lastTh:'มหากิจ', titleEn:'Mr.', firstEn:'Wichai', lastEn:'Mahakij', phone:'081-000-9999', email:'ceo@company.co.th', position:'Chief Executive Officer', empType:'ผู้บริหาร', level:'C-Level', doc:'หนังสือรับรอง_วิชัย.pdf' },
-    manager: { titleTh:'นาย', firstTh:'เจมส์', lastTh:'สุริยง', titleEn:'Mr.', firstEn:'James', lastEn:'Suriyong', phone:'081-555-1234', email:'james@company.co.th', position:'Sales Manager', empType:'พนักงานประจำ', level:'Manager', doc:'สัญญาจ้าง_เจมส์.pdf' },
-    itadmin: { titleTh:'นาย', firstTh:'ธีรเดช', lastTh:'อินทรกุล', titleEn:'Mr.', firstEn:'Theeradej', lastEn:'Intarakul', phone:'081-777-4321', email:'theeradej@company.co.th', position:'IT Administrator', empType:'พนักงานประจำ', level:'Senior', doc:'สัญญาจ้าง_ธีรเดช.pdf' },
-    superadmin: { titleTh:'-', firstTh:'Super', lastTh:'Administrator', titleEn:'-', firstEn:'Super', lastEn:'Administrator', phone:'-', email:'root@company.co.th', position:'System Root', empType:'ระบบ', level:'Root', doc:'-' },
+  // Position/employee-type/level/phone/document fields below don't exist in
+  // the real users table yet (name/email/role are the only real identity
+  // fields the backend has) — this is placeholder-only text, deliberately
+  // generic rather than another real employee's data, until those fields
+  // get a real column + save endpoint.
+  roleProfileDefaults = {
+    sales: { position:'Sales Executive', empType:'พนักงานประจำ', level:'-' },
+    executive: { position:'Executive', empType:'ผู้บริหาร', level:'-' },
+    manager: { position:'Sales Manager', empType:'พนักงานประจำ', level:'-' },
+    itadmin: { position:'IT Administrator', empType:'พนักงานประจำ', level:'-' },
+    superadmin: { position:'System Root', empType:'ระบบ', level:'-' },
   };
   profileFieldDefs = [
     {key:'titleTh', label:'คำนำหน้า (ภาษาไทย)'}, {key:'firstTh', label:'ชื่อจริง (ภาษาไทย)'}, {key:'lastTh', label:'นามสกุล (ภาษาไทย)'},
@@ -3173,6 +3204,26 @@ class Component extends DCLogic {
               catch (err) { alert('เปลี่ยนสิทธิ์ไม่สำเร็จ: '+err.message); }
             },
           })),
+          canDelete: u.id !== this.state.identityId && u.role !== 'superadmin',
+          deleteUser: async ()=>{
+            if (!confirm('ลบบัญชี '+u.name+' ('+u.email+') ใช่หรือไม่? การลบไม่สามารถย้อนกลับได้')) return;
+            try {
+              await this.api('/users/'+u.id, { method:'DELETE' });
+              await this.refreshUsers();
+            } catch (err) {
+              if (err.status === 409 && err.body && err.body.details) {
+                const d = err.body.details;
+                const parts = [];
+                if (d.dealCount > 0) parts.push('เป็นเจ้าของดีลอยู่ '+d.dealCount+' รายการ');
+                if (d.caretakerOfCustomers && d.caretakerOfCustomers.length > 0) {
+                  parts.push('เป็นผู้ดูแลลูกค้าปัจจุบันของ: '+d.caretakerOfCustomers.map(c=>c.name).join(', '));
+                }
+                alert('ลบบัญชีไม่ได้ เนื่องจากยังมีข้อมูลผูกอยู่:\n'+parts.join('\n')+'\n\nกรุณาย้ายงาน/มอบหมายลูกค้าให้ผู้อื่นก่อน');
+              } else {
+                alert('ลบบัญชีไม่สำเร็จ: '+err.message);
+              }
+            }
+          },
         };
       }),
       adminPwInputValue:this.state.adminPwInput||'',
@@ -3282,13 +3333,16 @@ class Component extends DCLogic {
             : ()=>{ s.on=!s.on; this.setState({}); },
         };
       }),
-      // account settings view
+      // account settings view — name/email come from the real logged-in
+      // identity (see refreshMe()); phone/position/empType/level/doc have no
+      // backing column yet, so they stay generic placeholders rather than
+      // another employee's real data.
       profile: (()=>{
-        const p=this.myProfiles[r]||this.myProfiles.sales;
-        return { ...p, fullTh:(p.titleTh+p.firstTh+' '+p.lastTh), initial:p.firstTh[0], passwordAgeDays:this.state.identityPasswordAgeDays };
+        const p=this.getProfileDraft();
+        return { ...p, fullTh:((p.titleTh||'')+p.firstTh+' '+p.lastTh), initial:(p.firstTh[0]||'?'), passwordAgeDays:this.state.identityPasswordAgeDays };
       })(),
       profileFields: this.profileFieldDefs.map(f=>{
-        const p=this.myProfiles[r]||this.myProfiles.sales;
+        const p=this.getProfileDraft();
         return { label:f.label, val:p[f.key], onChange:(e)=>{ p[f.key]=e.target.value; } };
       }),
       canEditDoc: r==='itadmin',

@@ -106,6 +106,28 @@ usersRouter.patch('/:id', requirePermission('addUser'), async (req, res) => {
 
 usersRouter.delete('/:id', requirePermission('addUser'), async (req, res) => {
   if (req.params.id === req.user!.id) return res.status(400).json({ error: 'cannot delete your own account' });
+
+  const { rows: ownedDeals } = await pool.query(
+    'select count(*)::int as count from deals where sales_user_id = $1',
+    [req.params.id]
+  );
+  const { rows: caretakerOf } = await pool.query(
+    `select c.id, c.name from customers c
+     join customer_caretakers cc on cc.customer_id = c.id
+     where cc.user_id = $1 and cc.current = true`,
+    [req.params.id]
+  );
+
+  if (ownedDeals[0].count > 0 || caretakerOf.length > 0) {
+    return res.status(409).json({
+      error: 'cannot delete: still linked to active records',
+      details: {
+        dealCount: ownedDeals[0].count,
+        caretakerOfCustomers: caretakerOf.map((c) => ({ id: c.id, name: c.name })),
+      },
+    });
+  }
+
   const { rowCount } = await pool.query('delete from users where id = $1', [req.params.id]);
   if (rowCount === 0) return res.status(404).json({ error: 'not found' });
   res.status(204).end();
