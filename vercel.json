@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd backend && npm install --include=dev && npm run migrate",
+  "outputDirectory": "frontend",
+  "rewrites": [
+    { "source": "/auth/:path*", "destination": "/api" },
+    { "source": "/users/:path*", "destination": "/api" },
+    { "source": "/deals/:path*", "destination": "/api" },
+    { "source": "/approvals/:path*", "destination": "/api" },
+    { "source": "/customers/:path*", "destination": "/api" },
+    { "source": "/security-settings/:path*", "destination": "/api" },
+    { "source": "/health", "destination": "/api" }
+  ]
+}

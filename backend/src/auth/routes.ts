@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { pool } from '../db';
 import { verifyPassword, passwordAgeDays } from './password';
@@ -7,6 +6,7 @@ import { generateSecret, otpAuthUrl, encryptSecret, verifyToken as verifyTotp } 
 import { signSession, signPendingTwoFa, verifyToken, PendingTwoFaPayload } from './jwt';
 import { requireAuth } from './middleware';
 import { getSettings } from '../security/settings';
+import { ipLoginRateLimiter } from './rateLimit';
 
 export const authRouter = Router();
 
@@ -17,27 +17,12 @@ const cookieOpts = {
   maxAge: 30 * 60 * 1000,
 };
 
-// Per-IP limiter, distinct from the per-account lockout below — that one
-// stops someone hammering a single account, this stops credential stuffing
-// spread across many accounts from one source. Keyed on req.ip; if this ever
-// runs behind a reverse proxy/load balancer, `app.set('trust proxy', ...)`
-// must be configured to match that topology or every request appears to
-// come from the proxy's IP and this limiter does nothing (or locks out
-// everyone behind it).
-const loginRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'too many login attempts, try again later' },
-});
-
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
 
-authRouter.post('/login', loginRateLimiter, async (req, res) => {
+authRouter.post('/login', ipLoginRateLimiter, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'invalid request' });
   const { email, password } = parsed.data;
