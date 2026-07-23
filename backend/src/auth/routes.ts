@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { pool } from '../db';
-import { verifyPassword, passwordAgeDays } from './password';
+import { verifyPassword, hashPassword, policyErrors, passwordAgeDays } from './password';
 import { generateSecret, otpAuthUrl, encryptSecret, verifyToken as verifyTotp } from './totp';
 import { signSession, signPendingTwoFa, verifyToken, PendingTwoFaPayload } from './jwt';
 import { requireAuth } from './middleware';
 import { getSettings } from '../security/settings';
-import { ipLoginRateLimiter } from './rateLimit';
+import { ipLoginRateLimiter, ipRegisterRateLimiter } from './rateLimit';
 
 export const authRouter = Router();
 
@@ -96,6 +96,41 @@ authRouter.post('/login', ipLoginRateLimiter, async (req, res) => {
   const token = signSession(user.id);
   res.cookie('session', token, cookieOpts);
   return res.json({ needs2fa: false });
+});
+
+const registerSchema = z.object({
+  firstNameTh: z.string().min(1),
+  lastNameTh: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+// Public — no auth. Creates a pending request, not a login-capable account;
+// an IT Admin/Superadmin has to approve it (POST /users/registration-requests/:id/approve).
+authRouter.post('/register', ipRegisterRateLimiter, async (req, res) => {
+  const parsed = registerSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'invalid request' });
+  const { firstNameTh, lastNameTh, email, password } = parsed.data;
+
+  const policyIssues = await policyErrors(password);
+  if (policyIssues.length > 0) return res.status(400).json({ error: 'password policy', details: policyIssues });
+
+  const { rows: existingUser } = await pool.query('select 1 from users where email = $1', [email]);
+  if (existingUser.length > 0) return res.status(409).json({ error: 'an account with this email already exists' });
+
+  const { rows: pendingReq } = await pool.query(
+    `select 1 from registration_requests where email = $1 and status = 'pending'`,
+    [email]
+  );
+  if (pendingReq.length > 0) return res.status(409).json({ error: 'a request for this email is already pending' });
+
+  const passwordHash = await hashPassword(password);
+  await pool.query(
+    `insert into registration_requests (first_name_th, last_name_th, email, password_hash)
+     values ($1, $2, $3, $4)`,
+    [firstNameTh, lastNameTh, email, passwordHash]
+  );
+  res.status(201).json({ ok: true });
 });
 
 const verify2faSchema = z.object({

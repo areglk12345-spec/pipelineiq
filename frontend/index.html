@@ -554,11 +554,11 @@
         <div style="font-size:17px;font-weight:700;color:#0f1b2d;margin-bottom:4px">สร้างบัญชีใหม่</div>
         <div style="font-size:12.5px;color:#94a1b3;margin-bottom:22px">กรอกข้อมูลเพื่อส่งคำขอสร้างบัญชี — IT Admin จะตรวจสอบและอนุมัติ</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin-bottom:14px">
-          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">ชื่อจริง</label><input placeholder="เช่น อภิชาติ" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;color:#0f1b2d;background:#fbfcfe"></div>
-          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">นามสกุล</label><input placeholder="เช่น รุ่งโรจน์" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;color:#0f1b2d;background:#fbfcfe"></div>
-          <div style="grid-column:span 2"><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">อีเมลองค์กร</label><input placeholder="name.s@company.co.th" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans';color:#0f1b2d;background:#fbfcfe"></div>
-          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">รหัสผ่าน</label><input type="password" placeholder="ตาม Password Policy" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans';color:#0f1b2d;background:#fbfcfe"></div>
-          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">ยืนยันรหัสผ่าน</label><input type="password" placeholder="กรอกซ้ำอีกครั้ง" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans';color:#0f1b2d;background:#fbfcfe"></div>
+          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">ชื่อจริง</label><input value="{{ regFirstName }}" sc-camel-on-change="{{ onRegFirstName }}" placeholder="เช่น อภิชาติ" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;color:#0f1b2d;background:#fbfcfe"></div>
+          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">นามสกุล</label><input value="{{ regLastName }}" sc-camel-on-change="{{ onRegLastName }}" placeholder="เช่น รุ่งโรจน์" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;color:#0f1b2d;background:#fbfcfe"></div>
+          <div style="grid-column:span 2"><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">อีเมลองค์กร</label><input value="{{ regEmail }}" sc-camel-on-change="{{ onRegEmail }}" placeholder="name.s@company.co.th" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans';color:#0f1b2d;background:#fbfcfe"></div>
+          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">รหัสผ่าน</label><input type="password" value="{{ regPassword }}" sc-camel-on-change="{{ onRegPassword }}" placeholder="ตาม Password Policy" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans';color:#0f1b2d;background:#fbfcfe"></div>
+          <div><label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">ยืนยันรหัสผ่าน</label><input type="password" value="{{ regConfirm }}" sc-camel-on-change="{{ onRegConfirm }}" placeholder="กรอกซ้ำอีกครั้ง" style="width:100%;border:1px solid #d9e0e9;border-radius:9px;padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans';color:#0f1b2d;background:#fbfcfe"></div>
         </div>
         <button sc-camel-on-click="{{ submitRegister }}" style="width:100%;background:#2f5fe0;border:none;color:#fff;border-radius:10px;padding:13px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:14px">ส่งคำขอสร้างบัญชี</button>
       </sc-if>
@@ -566,7 +566,7 @@
         <div style="text-align:center;padding:18px 0 8px">
           <svg width="42" height="42" sc-camel-view-box="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-6"></path></svg>
           <div style="font-size:15px;font-weight:700;color:#0f1b2d;margin-bottom:6px">ส่งคำขอเรียบร้อย</div>
-          <div style="font-size:12.5px;color:#7a869a;line-height:1.6;margin-bottom:18px">IT Admin จะตรวจสอบและอนุมัติบัญชีของคุณ<br>ลิงก์ตั้งค่า 2FA จะถูกส่งไปที่อีเมลเมื่ออนุมัติแล้ว</div>
+          <div style="font-size:12.5px;color:#7a869a;line-height:1.6;margin-bottom:18px">IT Admin จะตรวจสอบและอนุมัติบัญชีของคุณ<br>เมื่ออนุมัติแล้ว เข้าสู่ระบบได้ทันทีด้วยอีเมลและรหัสผ่านที่ตั้งไว้</div>
         </div>
       </sc-if>
       <div style="text-align:center">
@@ -716,6 +716,9 @@
       <button sc-camel-on-click="{{ goUsers }}" style="{{ navUsers }}">
         <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <span>บัญชีผู้ใช้ &amp; สิทธิ์</span>
+        <sc-if value="{{ hasRegRequests }}" hint-placeholder-val="{{ false }}">
+          <span style="margin-left:auto;background:#e05656;color:#fff;font-size:10.5px;font-weight:700;border-radius:20px;padding:1px 8px">{{ regRequestCount }}</span>
+        </sc-if>
       </button>
       <button sc-camel-on-click="{{ goSecurity }}" style="{{ navSecurity }}">
         <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -1644,6 +1647,24 @@
           <button sc-camel-on-click="{{ addUserBtn }}" style="margin-left:auto;display:flex;align-items:center;gap:7px;background:#2f5fe0;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer">+ สร้างพนักงานใหม่</button>
         </div>
 
+        <!-- ===== self-registration approval queue ===== -->
+        <sc-if value="{{ hasRegRequests }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #e2e7ee;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(15,27,45,.04);margin-bottom:18px">
+            <div style="padding:12px 20px;background:#fef3e2;border-bottom:1px solid #f6dcae;font-size:12.5px;font-weight:700;color:#8a6a2e">คำขอสร้างบัญชีรอตรวจสอบ ({{ regRequestCount }})</div>
+            <sc-for list="{{ regRequestRows }}" as="rr" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f2f5f9">
+                <div style="width:33px;height:33px;flex:none;border-radius:50%;background:#eef1f6;color:#3d4d63;font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ rr.initial }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:600;color:#0f1b2d">{{ rr.name }}</div>
+                  <div style="font-size:11px;color:#94a1b3;font-family:'IBM Plex Sans'">{{ rr.email }} · ขอเมื่อ {{ rr.time }}</div>
+                </div>
+                <button sc-camel-on-click="{{ rr.approve }}" style="background:#16a34a;border:none;color:#fff;border-radius:7px;padding:7px 14px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer">อนุมัติ</button>
+                <button sc-camel-on-click="{{ rr.reject }}" style="background:#fff;border:1px solid #d9e0e9;color:#5b6779;border-radius:7px;padding:7px 14px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer">ปฏิเสธ</button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
         <sc-if value="{{ addUserOpen }}" hint-placeholder-val="{{ false }}">
           <div sc-camel-on-click="{{ closeAddUser }}" style="position:fixed;inset:0;background:rgba(15,27,45,.42);z-index:50;animation:fadeIn .18s ease"></div>
           <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;max-width:94vw;max-height:88vh;overflow-y:auto;background:#fff;border-radius:16px;padding:26px 30px;z-index:51;box-shadow:0 24px 60px rgba(15,27,45,.32);animation:fadeIn .2s ease">
@@ -2249,6 +2270,7 @@ class Component extends DCLogic {
     });
     if (user.role === 'superadmin' || user.perms?.addUser) {
       this.refreshUsers().catch(() => {});
+      this.refreshRegistrationRequests().catch(() => {});
     }
     // Everyone (not just addUser holders) needs names for the deal-assignment
     // dropdowns (CRM/Sales/Turnkey/MA pickers) — a lightweight id+name
@@ -2293,6 +2315,15 @@ class Component extends DCLogic {
   async refreshUserDirectory() {
     const { users } = await this.api('/users/directory');
     this.userDirectory = users;
+    this.setState({});
+  }
+
+  // Self-registration approval queue — same addUser-gated audience as
+  // refreshUsers(), called alongside it.
+  regRequests = [];
+  async refreshRegistrationRequests() {
+    const { requests } = await this.api('/users/registration-requests');
+    this.regRequests = requests;
     this.setState({});
   }
 
@@ -2668,11 +2699,29 @@ class Component extends DCLogic {
       },
       isLoginMode:this.state.loginMode==='login' && !this.state.otpStage,
       isRegisterMode:this.state.loginMode==='register' && !this.state.otpStage,
-      goRegister:()=>this.setState({loginMode:'register', regDone:false, loginError:false}),
+      goRegister:()=>this.setState({loginMode:'register', regDone:false, loginError:false, regFirstName:'', regLastName:'', regEmail:'', regPassword:'', regConfirm:''}),
       goLoginMode:()=>this.setState({loginMode:'login', regDone:false}),
       regDone:this.state.regDone,
       regNotDone:!this.state.regDone,
-      submitRegister:()=>this.setState({regDone:true}),
+      regFirstName:this.state.regFirstName||'', onRegFirstName:(e)=>this.setState({regFirstName:e.target.value}),
+      regLastName:this.state.regLastName||'', onRegLastName:(e)=>this.setState({regLastName:e.target.value}),
+      regEmail:this.state.regEmail||'', onRegEmail:(e)=>this.setState({regEmail:e.target.value}),
+      regPassword:this.state.regPassword||'', onRegPassword:(e)=>this.setState({regPassword:e.target.value}),
+      regConfirm:this.state.regConfirm||'', onRegConfirm:(e)=>this.setState({regConfirm:e.target.value}),
+      submitRegister:async ()=>{
+        const f = this.state;
+        if (!f.regFirstName || !f.regLastName || !f.regEmail) { alert('กรุณากรอกข้อมูลให้ครบ'); return; }
+        if (!f.regPassword || f.regPassword !== f.regConfirm) { alert('รหัสผ่านและการยืนยันไม่ตรงกัน'); return; }
+        try {
+          await this.api('/auth/register', { method:'POST', body: JSON.stringify({
+            firstNameTh: f.regFirstName, lastNameTh: f.regLastName, email: f.regEmail, password: f.regPassword,
+          })});
+          this.setState({ regDone:true, regPassword:'', regConfirm:'' });
+        } catch (err) {
+          const details = (err.body && err.body.details) ? '\n'+err.body.details.join('\n') : '';
+          alert('ส่งคำขอไม่สำเร็จ: '+err.message+details);
+        }
+      },
       demoLogin:()=>this.setState({loggedIn:true, role:'manager', loginRole:'manager', loginError:false, view:'dashboard', panelId:null, editMode:false, draft:null}),
       // Only a real superadmin identity may use the role-switcher below to
       // preview other roles' screens; the backend never trusts state.role
@@ -3194,6 +3243,23 @@ class Component extends DCLogic {
       },
       userCount:this.usersList.filter(u=> r==='superadmin' || u.role!=='superadmin').length,
       twoFACount:this.usersList.filter(u=>(r==='superadmin' || u.role!=='superadmin')&&u.two_fa_enabled).length,
+      hasRegRequests: this.regRequests.length>0,
+      regRequestCount: this.regRequests.length,
+      regRequestRows: this.regRequests.map(rr=>{
+        const name = rr.first_name_th+' '+rr.last_name_th;
+        return {
+          name, email:rr.email, initial:this.initialOf(name),
+          time: new Date(rr.created_at).toLocaleString('th-TH'),
+          approve: async ()=>{
+            try { await this.api('/users/registration-requests/'+rr.id+'/approve', { method:'POST' }); await this.refreshRegistrationRequests(); await this.refreshUsers(); }
+            catch (err) { alert('อนุมัติไม่สำเร็จ: '+err.message); }
+          },
+          reject: async ()=>{
+            try { await this.api('/users/registration-requests/'+rr.id+'/reject', { method:'POST' }); await this.refreshRegistrationRequests(); }
+            catch (err) { alert('ปฏิเสธไม่สำเร็จ: '+err.message); }
+          },
+        };
+      }),
       // security view
       // s1/s9/s10 are real (backed by security_settings); the rest are
       // infrastructure-level items with no app-layer toggle behind them —

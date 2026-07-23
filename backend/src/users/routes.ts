@@ -209,3 +209,56 @@ usersRouter.post('/:id/2fa/disable', requirePermission('addUser'), async (req, r
   if (rowCount === 0) return res.status(404).json({ error: 'not found' });
   res.json({ ok: true });
 });
+
+// Self-registration approval queue (POST /auth/register creates these).
+// Same permission as the existing "add employee" flow — approving a
+// registration request is account creation either way.
+usersRouter.get('/registration-requests', requirePermission('addUser'), async (_req, res) => {
+  const { rows } = await pool.query(
+    `select id, first_name_th, last_name_th, email, created_at
+     from registration_requests where status = 'pending' order by created_at asc`
+  );
+  res.json({ requests: rows });
+});
+
+// Default role/perms for an approved self-registration mirror the existing
+// admin "add employee" flow (frontend/index.html submitNewEmp) — every
+// self-registered account starts as a plain sales rep; IT Admin can change
+// role/perms afterward via the normal PATCH /users/:id.
+const DEFAULT_REGISTERED_PERMS = { addDeal: true, editDeal: false, delDeal: false, addUser: false, grantAdmin: false };
+
+usersRouter.post('/registration-requests/:id/approve', requirePermission('addUser'), async (req, res) => {
+  const { rows } = await pool.query(
+    `select * from registration_requests where id = $1 and status = 'pending'`,
+    [req.params.id]
+  );
+  const request = rows[0];
+  if (!request) return res.status(404).json({ error: 'not found or already resolved' });
+
+  try {
+    const { rows: created } = await pool.query(
+      `insert into users (name, email, password_hash, role, perms, must_change_password)
+       values ($1, $2, $3, 'sales', $4, false)
+       returning id`,
+      [`${request.first_name_th} ${request.last_name_th}`, request.email, request.password_hash, DEFAULT_REGISTERED_PERMS]
+    );
+    await pool.query(
+      `update registration_requests set status = 'approved', resolved_at = now(), resolved_by = $1, resulting_user_id = $2 where id = $3`,
+      [req.user!.id, created[0].id, request.id]
+    );
+    res.json({ ok: true, userId: created[0].id });
+  } catch (err: any) {
+    if (err.code === '23505') return res.status(409).json({ error: 'an account with this email was created in the meantime' });
+    throw err;
+  }
+});
+
+usersRouter.post('/registration-requests/:id/reject', requirePermission('addUser'), async (req, res) => {
+  const { rowCount } = await pool.query(
+    `update registration_requests set status = 'rejected', resolved_at = now(), resolved_by = $1
+     where id = $2 and status = 'pending'`,
+    [req.user!.id, req.params.id]
+  );
+  if (rowCount === 0) return res.status(404).json({ error: 'not found or already resolved' });
+  res.json({ ok: true });
+});
