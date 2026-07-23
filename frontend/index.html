@@ -2726,7 +2726,21 @@ class Component extends DCLogic {
       quickAccounts:[],
       logout:async ()=>{
         try { await this.api('/auth/logout', { method:'POST' }); } catch {}
-        this.setState({loggedIn:false, loginUser:'', loginPw:'', loginRole:null, loginError:false, loginMode:'login', regDone:false, panelId:null, editMode:false, draft:null, view:'dashboard', role:'manager', identityRole:null, identityName:'', identityEmail:'', identityPerms:{}});
+        // usersList/regRequests/securitySettings/approvals/deals/customers/
+        // userDirectory/profileDraft are class fields, not `state` — clear
+        // them explicitly, or the next login in this same tab (a different,
+        // possibly lower-privileged account) would keep rendering this
+        // session's already-fetched data until its own refetch succeeds
+        // (and never, if that account lacks permission to refetch at all).
+        this.usersList = [];
+        this.regRequests = [];
+        this.userDirectory = [];
+        this.customers = [];
+        this.approvals = [];
+        this.deals = [];
+        this.profileDraft = null;
+        this.securitySettings = { enforce_2fa_org:false, enforce_2fa_sales:false, enforce_2fa_executive:false, pw_min_length:12, pw_require_complexity:true, pw_history_count:5, pw_max_age_days:90, pw_lockout_attempts:5, pw_lockout_minutes:15, pw_check_hibp:false };
+        this.setState({loggedIn:false, loginUser:'', loginPw:'', loginRole:null, loginError:false, loginMode:'login', regDone:false, panelId:null, editMode:false, draft:null, view:'dashboard', role:'manager', identityId:null, identityRole:null, identityName:'', identityEmail:'', identityPerms:{}});
       },
       isLoginMode:this.state.loginMode==='login' && !this.state.otpStage,
       isRegisterMode:this.state.loginMode==='register' && !this.state.otpStage,
