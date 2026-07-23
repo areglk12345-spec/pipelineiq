@@ -1440,14 +1440,19 @@
             <div style="margin-bottom:20px">
               <label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">เอกสารยืนยันสถานะการทำงาน</label>
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                <button sc-camel-on-click="{{ toggleDocPreview }}" style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#2f5fe0;background:#eef3fe;border:1px solid #d9e4fb;border-radius:8px;padding:8px 13px;font-family:inherit;font-weight:600;cursor:pointer">
-                  <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>
-                  {{ profile.doc }}
-                  <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#2f5fe0;border-left:1px solid #d9e4fb;padding-left:8px">
-                    <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    {{ docPreviewLabel }}
-                  </span>
-                </button>
+                <sc-if value="{{ hasEmploymentDoc }}" hint-placeholder-val="{{ false }}">
+                  <button sc-camel-on-click="{{ toggleDocPreview }}" style="display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#2f5fe0;background:#eef3fe;border:1px solid #d9e4fb;border-radius:8px;padding:8px 13px;font-family:inherit;font-weight:600;cursor:pointer">
+                    <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>
+                    {{ profile.doc }}
+                    <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#2f5fe0;border-left:1px solid #d9e4fb;padding-left:8px">
+                      <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      {{ docPreviewLabel }}
+                    </span>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ hasEmploymentDoc }}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size:12.5px;color:#94a1b3">ยังไม่มีเอกสารแนบ</span>
+                </sc-if>
                 <sc-if value="{{ docLocked }}" hint-placeholder-val="{{ true }}">
                   <div style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#8a6a2e;background:#fef3e2;border:1px solid #f6dcae;border-radius:20px;padding:5px 12px;font-weight:600">
                     <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
@@ -1455,37 +1460,30 @@
                   </div>
                 </sc-if>
                 <sc-if value="{{ canEditDoc }}" hint-placeholder-val="{{ false }}">
-                  <button style="display:inline-flex;align-items:center;gap:6px;background:#2f5fe0;border:none;color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">
+                  <label style="display:inline-flex;align-items:center;gap:6px;background:#2f5fe0;border:none;color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">
+                    <input type="file" accept="application/pdf,image/jpeg" style="display:none" sc-camel-on-change="{{ onProfileDocChange }}">
                     <svg width="13" height="13" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
                     อัปโหลดเอกสารใหม่
-                  </button>
-                  <button style="background:#fff;border:1px solid #d9e0e9;color:#5b6779;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">แก้ไขชื่อเอกสาร</button>
+                  </label>
                 </sc-if>
               </div>
               <sc-if value="{{ docPreviewOpen }}" hint-placeholder-val="{{ false }}">
                 <div style="margin-top:12px;background:#f7f9fc;border:1px solid #dbe4f0;border-radius:12px;padding:18px;display:flex;gap:16px;align-items:flex-start">
                   <div style="flex:none;width:88px;height:112px;background:#fff;border:1px solid #dbe4f0;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 6px rgba(15,27,45,.06)">
                     <svg width="30" height="30" sc-camel-view-box="0 0 24 24" fill="none" stroke="#c02020" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>
-                    <span style="font-size:9.5px;font-weight:700;color:#c02020">PDF</span>
+                    <span style="font-size:9.5px;font-weight:700;color:#c02020">{{ employmentDocKindLabel }}</span>
                   </div>
                   <div style="flex:1;min-width:0">
                     <div style="font-size:13px;font-weight:700;color:#0f1b2d;margin-bottom:6px">{{ profile.doc }}</div>
-                    <div style="font-size:11.5px;color:#7a869a;line-height:1.6">ประเภท: เอกสารยืนยันสถานะการทำงาน<br>อัปโหลดโดย: IT Admin · 1 ก.ค. 2569<br>สถานะ: ตรวจสอบแล้ว ✓</div>
+                    <div style="font-size:11.5px;color:#7a869a;line-height:1.6">ประเภท: เอกสารยืนยันสถานะการทำงาน<br>อัปโหลดโดย: {{ employmentDocUploadedBy }} · {{ employmentDocUploadedAt }}</div>
                     <div style="display:flex;gap:8px;margin-top:10px">
-                      <button style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #d9e0e9;color:#5b6779;border-radius:8px;padding:7px 13px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer">
+                      <a href="{{ employmentDocUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #d9e0e9;color:#5b6779;border-radius:8px;padding:7px 13px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;text-decoration:none">
                         <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5"></path><path d="M4 20h16"></path></svg>
                         ดาวน์โหลด
-                      </button>
+                      </a>
                       <button sc-camel-on-click="{{ toggleDocPreview }}" style="background:#fff;border:1px solid #d9e0e9;color:#5b6779;border-radius:8px;padding:7px 13px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer">ปิด</button>
                     </div>
                   </div>
-                </div>
-              </sc-if>
-              <sc-if value="{{ canEditDoc }}" hint-placeholder-val="{{ false }}">
-                <div style="border:1.6px dashed #c3cdda;border-radius:12px;padding:18px;text-align:center;background:#fafbfd;cursor:pointer;margin-top:12px">
-                  <svg width="24" height="24" sc-camel-view-box="0 0 24 24" fill="none" stroke="#8a97ad" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:5px"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
-                  <div style="font-size:12.5px;font-weight:600;color:#5b6779">ลากไฟล์เอกสารมาวางที่นี่ หรือ <span style="color:#2f5fe0">เลือกไฟล์</span></div>
-                  <div style="font-size:11px;color:#a3aec0;margin-top:3px">สัญญาจ้าง / หนังสือรับรอง · PDF, JPG (สูงสุด 10 MB)</div>
                 </div>
               </sc-if>
             </div>
@@ -1770,12 +1768,18 @@
               </div>
             </div>
             <div style="margin-bottom:18px">
-              <label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">เอกสารยืนยันสถานะการทำงาน <span style="color:#dc2626">*</span></label>
-              <div style="border:1.6px dashed #c3cdda;border-radius:12px;padding:20px;text-align:center;background:#fafbfd;cursor:pointer">
+              <label style="font-size:12px;font-weight:600;color:#5b6779;display:block;margin-bottom:6px">เอกสารยืนยันสถานะการทำงาน <span style="color:#94a1b3;font-weight:400">(ไม่บังคับ)</span></label>
+              <label style="border:1.6px dashed #c3cdda;border-radius:12px;padding:20px;text-align:center;background:#fafbfd;cursor:pointer;display:block">
+                <input type="file" accept="application/pdf,image/jpeg" style="display:none" sc-camel-on-change="{{ onNewEmpDocChange }}">
                 <svg width="26" height="26" sc-camel-view-box="0 0 24 24" fill="none" stroke="#8a97ad" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
-                <div style="font-size:12.5px;font-weight:600;color:#5b6779">ลากไฟล์มาวางที่นี่ หรือ <span style="color:#2f5fe0">เลือกไฟล์</span></div>
+                <sc-if value="{{ newEmpDocPicked }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;font-weight:600;color:#16a34a">✓ {{ newEmpDocFileName }} <span style="color:#94a1b3;font-weight:400">(คลิกเพื่อเปลี่ยนไฟล์)</span></div>
+                </sc-if>
+                <sc-if value="{{ newEmpDocPicked }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:12.5px;font-weight:600;color:#5b6779">ลากไฟล์มาวางที่นี่ หรือ <span style="color:#2f5fe0">เลือกไฟล์</span></div>
+                </sc-if>
                 <div style="font-size:11px;color:#a3aec0;margin-top:3px">สัญญาจ้าง / หนังสือรับรอง · PDF, JPG (สูงสุด 10 MB)</div>
-              </div>
+              </label>
             </div>
             <div style="display:flex;justify-content:flex-end;gap:9px">
               <button sc-camel-on-click="{{ closeAddUser }}" style="background:#fff;border:1px solid #d9e0e9;color:#5b6779;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer">ยกเลิก</button>
@@ -2257,6 +2261,28 @@ class Component extends DCLogic {
     return body;
   }
 
+  // this.api() always forces Content-Type: application/json, which breaks
+  // multipart boundaries — file uploads need their own thin wrapper.
+  async uploadFile(path, fieldName, file) {
+    const fd = new FormData();
+    fd.append(fieldName, file);
+    const res = await fetch(this.API_BASE + path, { method: 'POST', credentials: 'include', body: fd });
+    let body = null;
+    try { body = await res.json(); } catch {}
+    if (!res.ok) {
+      const err = new Error((body && body.error) || res.statusText);
+      err.status = res.status;
+      err.body = body;
+      throw err;
+    }
+    return body;
+  }
+
+  async refreshEmploymentDoc(userId) {
+    const { doc } = await this.api('/users/' + userId + '/employment-doc/meta');
+    this.setState({ employmentDoc: doc });
+  }
+
   get ME() { return this.state.identityName || ''; }
 
   async refreshMe() {
@@ -2503,6 +2529,7 @@ class Component extends DCLogic {
     {key:'level', label:'ระดับ', ph:'เช่น Junior / Senior / Lead', half:true},
   ];
   newEmp = {};
+  newEmpDocFile = null;
 
   // Position/employee-type/level/phone/document fields below don't exist in
   // the real users table yet (name/email/role are the only real identity
@@ -2796,7 +2823,7 @@ class Component extends DCLogic {
       goForm:()=>this.setState({view:'form', formStep:1, newDeal:null, orgQuery:'', orgCode:null}),
       navDash:this.navStyle('dashboard'), navKanban:this.navStyle('kanban'), navForm:this.navStyle('form'),
       goApprovals:()=>this.setState({view:'approvals'}), goUsers:()=>this.setState({view:'users'}), goSecurity:()=>this.setState({view:'security'}),
-      goAccount:()=>this.setState({view:'account'}),
+      goAccount:()=>{ this.setState({view:'account'}); this.refreshEmploymentDoc(this.state.identityId).catch(()=>{}); },
       navApprovals:this.navStyle('approvals'), navUsers:this.navStyle('users'), navSecurity:this.navStyle('security'), navAccount:this.navStyle('account'),
       showFormNav, showKanbanNav, showApprovalsNav, showAdminNav, showAccountNav,
       accountChipStyle: (v==='account'
@@ -3256,7 +3283,7 @@ class Component extends DCLogic {
       }),
       adminPwInputValue:this.state.adminPwInput||'',
       onAdminPwInput:(e)=>this.setState({adminPwInput:e.target.value}),
-      addUserBtn:()=>{ this.newEmp={}; this.setState({addUserOpen:true, pwMode:'direct', pwInput:'', tempPw:''}); },
+      addUserBtn:()=>{ this.newEmp={}; this.newEmpDocFile=null; this.setState({addUserOpen:true, pwMode:'direct', pwInput:'', tempPw:''}); },
       pwModeDirect:this.state.pwMode==='direct',
       pwModeFirst:this.state.pwMode==='first',
       pickPwDirect:()=>this.setState({pwMode:'direct'}),
@@ -3300,6 +3327,17 @@ class Component extends DCLogic {
         label:f.label, ph:f.ph,
         onChange:(e)=>{ this.newEmp[f.key]=e.target.value; },
       })),
+      newEmpDocPicked: !!this.newEmpDocFile,
+      newEmpDocFileName: this.newEmpDocFile ? this.newEmpDocFile.name : '',
+      onNewEmpDocChange: (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        if (file.size > 10*1024*1024) { alert('ไฟล์ต้องไม่เกิน 10 MB'); return; }
+        if (!['application/pdf','image/jpeg','image/jpg'].includes(file.type)) { alert('รองรับเฉพาะไฟล์ PDF และ JPG เท่านั้น'); return; }
+        this.newEmpDocFile = file;
+        this.setState({});
+      },
       submitNewEmp:async ()=>{
         const n=this.newEmp;
         const name=((n.titleTh||'')+(n.firstTh?n.firstTh+' ':'ผู้ใช้ใหม่ ')+(n.lastTh||'')).trim()||'ผู้ใช้ใหม่ (รอตั้งชื่อ)';
@@ -3307,12 +3345,20 @@ class Component extends DCLogic {
         if (!n.email) { alert('กรุณากรอก E-mail'); return; }
         if (!password) { alert('กรุณากำหนดรหัสผ่าน'); return; }
         try {
-          await this.api('/users', { method:'POST', body: JSON.stringify({
+          const { user } = await this.api('/users', { method:'POST', body: JSON.stringify({
             name, email:n.email, role:'sales',
             perms:{addDeal:true, editDeal:false, delDeal:false, addUser:false, grantAdmin:false},
             password, mustChangePassword: this.state.pwMode==='first',
           })});
+          if (this.newEmpDocFile) {
+            try {
+              await this.uploadFile('/users/' + user.id + '/employment-doc', 'doc', this.newEmpDocFile);
+            } catch (docErr) {
+              alert('สร้างบัญชีสำเร็จ แต่แนบเอกสารไม่สำเร็จ: '+docErr.message+'\nสามารถอัปโหลดใหม่ภายหลังได้');
+            }
+          }
           this.newEmp={};
+          this.newEmpDocFile=null;
           await this.refreshUsers();
           this.setState({addUserOpen:false, pwInput:'', tempPw:''});
         } catch (err) {
@@ -3362,12 +3408,14 @@ class Component extends DCLogic {
         };
       }),
       // account settings view — name/email come from the real logged-in
-      // identity (see refreshMe()); phone/position/empType/level/doc have no
-      // backing column yet, so they stay generic placeholders rather than
-      // another employee's real data.
+      // identity (see refreshMe()); phone/position/empType/level have no
+      // backing column yet, so they stay generic placeholders. The
+      // employment document is real (see employment_doc_* columns +
+      // refreshEmploymentDoc()).
       profile: (()=>{
         const p=this.getProfileDraft();
-        return { ...p, fullTh:((p.titleTh||'')+p.firstTh+' '+p.lastTh), initial:(p.firstTh[0]||'?'), passwordAgeDays:this.state.identityPasswordAgeDays };
+        const doc=this.state.employmentDoc;
+        return { ...p, doc: doc?doc.name:'ยังไม่มีเอกสาร', fullTh:((p.titleTh||'')+p.firstTh+' '+p.lastTh), initial:(p.firstTh[0]||'?'), passwordAgeDays:this.state.identityPasswordAgeDays };
       })(),
       profileFields: this.profileFieldDefs.map(f=>{
         const p=this.getProfileDraft();
@@ -3375,6 +3423,24 @@ class Component extends DCLogic {
       }),
       canEditDoc: r==='itadmin',
       docLocked: r!=='itadmin',
+      hasEmploymentDoc: !!this.state.employmentDoc,
+      employmentDocKindLabel: this.state.employmentDoc?.mime === 'application/pdf' ? 'PDF' : 'JPG',
+      employmentDocUploadedBy: this.state.employmentDoc?.uploaded_by_name || '-',
+      employmentDocUploadedAt: this.state.employmentDoc?.uploaded_at ? new Date(this.state.employmentDoc.uploaded_at).toLocaleDateString('th-TH') : '-',
+      employmentDocUrl: this.API_BASE + '/users/' + this.state.identityId + '/employment-doc',
+      onProfileDocChange: async (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        if (file.size > 10*1024*1024) { alert('ไฟล์ต้องไม่เกิน 10 MB'); return; }
+        if (!['application/pdf','image/jpeg','image/jpg'].includes(file.type)) { alert('รองรับเฉพาะไฟล์ PDF และ JPG เท่านั้น'); return; }
+        try {
+          await this.uploadFile('/users/' + this.state.identityId + '/employment-doc', 'doc', file);
+          await this.refreshEmploymentDoc(this.state.identityId);
+        } catch (err) {
+          alert('อัปโหลดไม่สำเร็จ: ' + err.message);
+        }
+      },
       docPreviewOpen:this.state.docPreviewOpen,
       toggleDocPreview:()=>this.setState({docPreviewOpen:!this.state.docPreviewOpen}),
       docPreviewLabel:this.state.docPreviewOpen?'ซ่อนเอกสาร':'ดูเอกสาร',

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { z } from 'zod';
 import { pool } from '../db';
 import { requireAuth, requirePermission } from '../auth/middleware';
@@ -7,6 +8,16 @@ import { generateSecret, otpAuthUrl, encryptSecret, verifyToken as verifyTotp } 
 
 export const usersRouter = Router();
 usersRouter.use(requireAuth);
+
+const ALLOWED_DOC_MIMES = new Set(['application/pdf', 'image/jpeg', 'image/jpg']);
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!ALLOWED_DOC_MIMES.has(file.mimetype)) return cb(new Error('รองรับเฉพาะไฟล์ PDF และ JPG เท่านั้น'));
+    cb(null, true);
+  },
+});
 
 const ROLES = ['sales', 'manager', 'executive', 'itadmin', 'superadmin'] as const;
 const ADMIN_ROLES = new Set(['itadmin', 'superadmin']);
@@ -131,6 +142,58 @@ usersRouter.delete('/:id', requirePermission('addUser'), async (req, res) => {
   const { rowCount } = await pool.query('delete from users where id = $1', [req.params.id]);
   if (rowCount === 0) return res.status(404).json({ error: 'not found' });
   res.status(204).end();
+});
+
+usersRouter.post('/:id/employment-doc', requirePermission('addUser'), (req, res, next) => {
+  upload.single('doc')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    next();
+  });
+}, async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file uploaded' });
+  const { rowCount } = await pool.query(
+    `update users set employment_doc_name = $1, employment_doc_mime = $2, employment_doc_data = $3,
+       employment_doc_uploaded_at = now(), employment_doc_uploaded_by = $4, updated_at = now()
+     where id = $5`,
+    [req.file.originalname, req.file.mimetype, req.file.buffer, req.user!.id, req.params.id]
+  );
+  if (rowCount === 0) return res.status(404).json({ error: 'not found' });
+  res.status(201).json({ ok: true, name: req.file.originalname });
+});
+
+// Self, or anyone holding addUser (the same permission that lets you create
+// the employee this document belongs to), may view/download it.
+usersRouter.get('/:id/employment-doc', async (req, res) => {
+  if (req.user!.id !== req.params.id && req.user!.role !== 'superadmin' && !req.user!.perms?.addUser) {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  const { rows } = await pool.query(
+    `select employment_doc_name, employment_doc_mime, employment_doc_data,
+            employment_doc_uploaded_at, employment_doc_uploaded_by
+     from users where id = $1`,
+    [req.params.id]
+  );
+  const row = rows[0];
+  if (!row || !row.employment_doc_data) return res.status(404).json({ error: 'no document on file' });
+  res.setHeader('Content-Type', row.employment_doc_mime);
+  res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(row.employment_doc_name)}"`);
+  res.send(row.employment_doc_data);
+});
+
+usersRouter.get('/:id/employment-doc/meta', async (req, res) => {
+  if (req.user!.id !== req.params.id && req.user!.role !== 'superadmin' && !req.user!.perms?.addUser) {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  const { rows } = await pool.query(
+    `select u.employment_doc_name as name, u.employment_doc_mime as mime,
+            u.employment_doc_uploaded_at as uploaded_at, up.name as uploaded_by_name
+     from users u
+     left join users up on up.id = u.employment_doc_uploaded_by
+     where u.id = $1`,
+    [req.params.id]
+  );
+  if (rows.length === 0) return res.status(404).json({ error: 'not found' });
+  res.json({ doc: rows[0].name ? rows[0] : null });
 });
 
 const resetPasswordSchema = z.object({
