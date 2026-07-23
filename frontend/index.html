@@ -2209,7 +2209,10 @@ class Component extends DCLogic {
 
   // Base URL of the Phase-1 auth/users backend. Point this at wherever
   // `backend/` is deployed; same-origin deployments can leave this as ''.
-  API_BASE = window.__API_BASE__ || 'http://localhost:4000';
+  // Frontend and backend are served same-origin (locally via server.ts's
+  // express.static, in production via Vercel's static hosting + rewrites),
+  // so a relative path is always correct — no origin to hardcode.
+  API_BASE = window.__API_BASE__ || '';
 
   async api(path, opts = {}) {
     const res = await fetch(this.API_BASE + path, {
