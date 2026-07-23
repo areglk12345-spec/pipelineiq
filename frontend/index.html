@@ -1900,13 +1900,15 @@
           </div>
         </div>
         <div style="background:#fff;border:1px solid #e2e7ee;border-radius:14px;padding:20px 24px;box-shadow:0 1px 2px rgba(15,27,45,.04)">
-          <div style="font-size:13px;font-weight:700;color:#0f1b2d;margin-bottom:14px">บันทึกเหตุการณ์ความปลอดภัย (Audit Log)</div>
+          <div style="font-size:13px;font-weight:700;color:#0f1b2d;margin-bottom:3px">บันทึกเหตุการณ์ความปลอดภัย (Audit Log)</div>
+          <div style="font-size:11.5px;color:#94a1b3;margin-bottom:14px">ประวัติการล็อกอินจริง 20 รายการล่าสุด</div>
+          <sc-if value="{{ auditLogEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12px;color:#94a1b3">ยังไม่มีบันทึกการล็อกอิน</div>
+          </sc-if>
           <div style="display:flex;flex-direction:column;gap:10px">
-            <div style="display:flex;gap:12px;font-size:12px;align-items:baseline"><span style="flex:none;color:#a3aec0;font-family:'IBM Plex Sans';width:130px">18 ก.ค. 2569 08:42</span><span style="color:#3f4a5a">ล็อกอินสำเร็จ (2FA) — james@company.co.th จาก IP สำนักงานใหญ่</span></div>
-            <div style="display:flex;gap:12px;font-size:12px;align-items:baseline"><span style="flex:none;color:#a3aec0;font-family:'IBM Plex Sans';width:130px">18 ก.ค. 2569 07:15</span><span style="color:#c02020">WAF บล็อกความพยายาม SQL Injection จาก IP ต่างประเทศ (3 ครั้ง)</span></div>
-            <div style="display:flex;gap:12px;font-size:12px;align-items:baseline"><span style="flex:none;color:#a3aec0;font-family:'IBM Plex Sans';width:130px">17 ก.ค. 2569 18:30</span><span style="color:#3f4a5a">ปรับสิทธิ์ผู้ใช้ — theeradej@company.co.th เพิ่มสิทธิ์ "แก้ไขดีล" ให้ nattaporn@company.co.th</span></div>
-            <div style="display:flex;gap:12px;font-size:12px;align-items:baseline"><span style="flex:none;color:#a3aec0;font-family:'IBM Plex Sans';width:130px">17 ก.ค. 2569 02:00</span><span style="color:#3f4a5a">สำรองข้อมูลรายวันสำเร็จ (ฐานข้อมูล + ไฟล์ TOR, 4.2 GB)</span></div>
-            <div style="display:flex;gap:12px;font-size:12px;align-items:baseline"><span style="flex:none;color:#a3aec0;font-family:'IBM Plex Sans';width:130px">16 ก.ค. 2569 15:10</span><span style="color:#b06a12">ล็อกอินล้มเหลว 5 ครั้งติดต่อกัน — peerapol@company.co.th (บัญชีถูกล็อกชั่วคราว 15 นาที)</span></div>
+            <sc-for list="{{ auditLogRows }}" as="e" hint-placeholder-count="5">
+              <div style="display:flex;gap:12px;font-size:12px;align-items:baseline"><span style="flex:none;color:#a3aec0;font-family:'IBM Plex Sans';width:150px">{{ e.time }}</span><span style="{{ e.style }}">{{ e.text }}</span></div>
+            </sc-for>
           </div>
         </div>
       </div>
@@ -2287,6 +2289,7 @@ class Component extends DCLogic {
     }
     if (user.role === 'superadmin' || user.perms?.addUser) {
       this.refreshSecuritySettings().catch(() => {});
+      this.refreshAuditLog().catch(() => {});
     }
   }
 
@@ -2315,6 +2318,12 @@ class Component extends DCLogic {
   async refreshSecuritySettings() {
     const { settings } = await this.api('/security-settings');
     this.securitySettings = settings;
+    this.setState({});
+  }
+
+  async refreshAuditLog() {
+    const { entries } = await this.api('/security-settings/audit-log');
+    this.auditLog = entries;
     this.setState({});
   }
 
@@ -2458,6 +2467,10 @@ class Component extends DCLogic {
 
   // Real approval requests, fetched from the backend by refreshApprovals().
   approvals = [];
+
+  // Real login history, fetched by refreshAuditLog() — replaces the
+  // Security screen's previously-hardcoded fake log entries.
+  auditLog = [];
 
   // Real values, fetched by refreshSecuritySettings(); the 5 defaults below
   // avoid a flash of "off" before the first fetch resolves.
@@ -2738,6 +2751,7 @@ class Component extends DCLogic {
         this.customers = [];
         this.approvals = [];
         this.deals = [];
+        this.auditLog = [];
         this.profileDraft = null;
         this.securitySettings = { enforce_2fa_org:false, enforce_2fa_sales:false, enforce_2fa_executive:false, pw_min_length:12, pw_require_complexity:true, pw_history_count:5, pw_max_age_days:90, pw_lockout_attempts:5, pw_lockout_minutes:15, pw_check_hibp:false };
         this.setState({loggedIn:false, loginUser:'', loginPw:'', loginRole:null, loginError:false, loginMode:'login', regDone:false, panelId:null, editMode:false, draft:null, view:'dashboard', role:'manager', identityId:null, identityRole:null, identityName:'', identityEmail:'', identityPerms:{}});
@@ -3446,6 +3460,13 @@ class Component extends DCLogic {
           toggle:p.toggle,
         }));
       })(),
+      // real login history from login_audit (see refreshAuditLog())
+      auditLogEmpty: this.auditLog.length===0,
+      auditLogRows: this.auditLog.map(e=>({
+        time: new Date(e.created_at).toLocaleString('th-TH'),
+        text: (e.success ? 'ล็อกอินสำเร็จ — ' : 'ล็อกอินล้มเหลว — ') + e.email_attempted + (e.ip ? ' จาก IP ' + e.ip : ''),
+        style: e.success ? 'color:#3f4a5a' : 'color:#c02020',
+      })),
       // form — every field binds to state.newDeal.*; submit fires on step 3
       formStep:this.state.formStep,
       formIs1:this.state.formStep===1, formIs2:this.state.formStep===2, formIs3:this.state.formStep===3,
