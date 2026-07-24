@@ -1,6 +1,7 @@
 {
   "buildCommand": "cd backend && npm install --include=dev && npm run migrate",
   "outputDirectory": "frontend",
+  "regions": ["icn1"],
   "rewrites": [
     { "source": "/auth/:path*", "destination": "/api" },
     { "source": "/users/:path*", "destination": "/api" },

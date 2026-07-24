@@ -2438,6 +2438,22 @@ class Component extends DCLogic {
     this.setState({});
   }
 
+  // Re-fetches a single deal (with its logs/plan) instead of the whole board
+  // — used after actions that only touch one deal, so a note/checklist edit
+  // doesn't re-pull every deal's nested logs+plan over the network.
+  async refreshOneDeal(id) {
+    const { deal } = await this.api('/deals/'+id);
+    const normalized = this.normalizeDeal(deal);
+    const idx = this.deals.findIndex(d => d.id === id);
+    if (idx === -1) this.deals.push(normalized); else this.deals[idx] = normalized;
+    this.setState({});
+  }
+
+  removeDealLocal(id) {
+    this.deals = this.deals.filter(d => d.id !== id);
+    this.setState({});
+  }
+
   // Add-Deal form field helpers — state.newDeal is a plain object keyed by
   // the fields below, reset on open/submit/cancel.
   nd(field){ return (this.state.newDeal && this.state.newDeal[field]) || ''; }
@@ -2463,7 +2479,7 @@ class Component extends DCLogic {
           customerId = customer.id;
         }
       }
-      await this.api('/deals', { method:'POST', body: JSON.stringify({
+      const { deal } = await this.api('/deals', { method:'POST', body: JSON.stringify({
         customerId,
         poc: n.poc, position: n.position, email: n.email, phone: n.phone,
         project: n.project, service: n.service,
@@ -2472,7 +2488,7 @@ class Component extends DCLogic {
         crmUserId: n.crmUserId || null, salesUserId: n.salesUserId,
         turnkeyUserId: n.turnkeyUserId || null, maUserId: n.maUserId || null,
       })});
-      await this.refreshDeals();
+      this.deals.push(this.normalizeDeal(deal));
       this.setState({ view:'kanban', formStep:1, newDeal:null, orgQuery:'', orgCode:null });
     } catch (err) {
       const details = (err.body && err.body.details) ? '\n'+JSON.stringify(err.body.details) : '';
@@ -3286,7 +3302,7 @@ class Component extends DCLogic {
           approve: async ()=>{
             try {
               await this.api('/approvals/'+a.id+'/approve', { method:'POST' });
-              await this.refreshDeals();
+              if (a.type==='delete') this.removeDealLocal(a.dealId); else await this.refreshOneDeal(a.dealId);
               await this.refreshApprovals();
               if (a.type==='delete' && this.state.panelId===a.dealId) this.setState({panelId:null});
             } catch (err) { alert('อนุมัติไม่สำเร็จ: '+err.message); }
@@ -3673,7 +3689,7 @@ class Component extends DCLogic {
         if(!t || !this.state.panelId) return;
         try {
           await this.api('/deals/'+this.state.panelId+'/notes', { method:'POST', body: JSON.stringify({ text:t }) });
-          await this.refreshDeals();
+          await this.refreshOneDeal(this.state.panelId);
           this.setState({noteText:''});
         } catch (err) { alert('บันทึกโน้ตไม่สำเร็จ: '+err.message); }
       },
@@ -3701,14 +3717,14 @@ class Component extends DCLogic {
         try {
           const res = await this.api('/deals/'+d.id, { method:'DELETE' });
           if (res.pending) { alert('ส่งคำขอลบดีลแล้ว รอหัวหน้าอนุมัติ'); await this.refreshApprovals().catch(()=>{}); this.setState({}); }
-          else { await this.refreshDeals(); this.setState({panelId:null, editMode:false, draft:null}); }
+          else { this.removeDealLocal(d.id); this.setState({panelId:null, editMode:false, draft:null}); }
         } catch (err) { alert('ลบดีลไม่สำเร็จ: '+err.message); }
       };
       out.saveEdit = async ()=>{
         try {
           const res = await this.api('/deals/'+this.state.panelId, { method:'PATCH', body: JSON.stringify(this.state.draft) });
           if (res.pending) { alert('ส่งคำขอแก้ไขแล้ว รอหัวหน้าอนุมัติ'); await this.refreshApprovals().catch(()=>{}); }
-          else { await this.refreshDeals(); }
+          else { await this.refreshOneDeal(this.state.panelId); }
           this.setState({editMode:false, draft:null});
         } catch (err) { alert('บันทึกการแก้ไขไม่สำเร็จ: '+err.message); }
       };
@@ -3739,11 +3755,11 @@ class Component extends DCLogic {
           taskStyle: p.done ? 'font-size:12.5px;color:#8a97ad;text-decoration:line-through;line-height:1.5' : 'font-size:12.5px;color:#0f1b2d;font-weight:500;line-height:1.5',
           checkStyle: p.done ? 'width:19px;height:19px;flex:none;border-radius:6px;border:none;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:1px' : 'width:19px;height:19px;flex:none;border-radius:6px;border:1.6px solid #cdd6e2;background:#fff;color:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:1px',
           toggle: async ()=>{
-            try { await this.api('/deals/'+d.id+'/plan/'+p.id, { method:'PATCH', body: JSON.stringify({ done: !p.done }) }); await this.refreshDeals(); }
+            try { await this.api('/deals/'+d.id+'/plan/'+p.id, { method:'PATCH', body: JSON.stringify({ done: !p.done }) }); await this.refreshOneDeal(d.id); }
             catch (err) { alert('อัปเดตงานไม่สำเร็จ: '+err.message); }
           },
           remove: async ()=>{
-            try { await this.api('/deals/'+d.id+'/plan/'+p.id, { method:'DELETE' }); await this.refreshDeals(); }
+            try { await this.api('/deals/'+d.id+'/plan/'+p.id, { method:'DELETE' }); await this.refreshOneDeal(d.id); }
             catch (err) { alert('ลบงานไม่สำเร็จ: '+err.message); }
           },
         })),
@@ -3760,7 +3776,7 @@ class Component extends DCLogic {
         if(!t) return;
         try {
           await this.api('/deals/'+this.state.panelId+'/plan', { method:'POST', body: JSON.stringify({ task:t, due:this.state.newPlanDue }) });
-          await this.refreshDeals();
+          await this.refreshOneDeal(this.state.panelId);
           this.setState({newPlanTask:'', newPlanDue:''});
         } catch (err) { alert('เพิ่มงานไม่สำเร็จ: '+err.message); }
       };

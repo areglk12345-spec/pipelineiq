@@ -43,6 +43,13 @@ dealsRouter.get('/', async (req, res) => {
   res.json({ deals: rows });
 });
 
+dealsRouter.get('/:id', async (req, res) => {
+  const { rows } = await pool.query(`${DEAL_SELECT} where d.id = $1`, [req.params.id]);
+  if (rows.length === 0) return res.status(404).json({ error: 'not found' });
+  if (req.user!.role === 'sales' && rows[0].sales_user_id !== req.user!.id) return res.status(403).json({ error: 'forbidden' });
+  res.json({ deal: rows[0] });
+});
+
 const createDealSchema = z.object({
   customerId: z.string().uuid(),
   poc: z.string().optional(),
