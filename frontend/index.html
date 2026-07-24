@@ -2907,14 +2907,16 @@ class Component extends DCLogic {
         this.auditLog = [];
         this.setState({loggedIn:true, role:'manager', loginRole:'manager', identityId:this.demoUsersList[0].id, identityRole:'manager', identityName:this.demoUsersList[0].name, identityEmail:this.demoUsersList[0].email, identityPerms:this.demoUsersList[0].perms, loginError:false, view:'dashboard', panelId:null, editMode:false, draft:null});
       },
-      // Only a real superadmin identity may use the role-switcher below to
-      // preview other roles' screens; the backend never trusts state.role
-      // for authorization (every mutating request re-checks the real
-      // logged-in user's perms), so this is a UI convenience, not a
-      // privilege grant.
-      canImpersonate: this.state.identityRole==='superadmin',
-      showSuperSeg: this.state.identityRole==='superadmin',
-      roleSuper:()=>this.state.identityRole==='superadmin' && this.setState({role:'superadmin',panelId:null,editMode:false,draft:null}),
+      // Only a real superadmin identity — or the fully-static, backend-free
+      // demo walkthrough — may use the role-switcher below to preview other
+      // roles' screens; the backend never trusts state.role for
+      // authorization (every mutating request re-checks the real logged-in
+      // user's perms), so this is a UI convenience, not a privilege grant.
+      // In demo mode nothing here ever calls the backend either way (see
+      // isDemo guard in api()/uploadFile()), so previewing every role is safe.
+      canImpersonate: this.state.identityRole==='superadmin' || this.isDemo,
+      showSuperSeg: this.state.identityRole==='superadmin' || this.isDemo,
+      roleSuper:()=>(this.state.identityRole==='superadmin' || this.isDemo) && this.setState({role:'superadmin',panelId:null,editMode:false,draft:null}),
       segSuper:this.segStyle('superadmin'),
       // nav
       goDash:()=>this.setState({view:'dashboard'}), goKanban:()=>this.setState({view:'kanban'}),
@@ -2929,10 +2931,10 @@ class Component extends DCLogic {
         : 'display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;border:1px solid #22334d;background:#16243a;cursor:pointer;width:100%;font-family:inherit;transition:.15s'),
       pendingCount:this.approvals.length, hasPendingAny:this.approvals.length>0,
       // role
-      roleSales:()=>this.state.identityRole==='superadmin' && this.setState({role:'sales',panelId:null,view:(v==='approvals'||v==='users'||v==='security')?'dashboard':v}),
-      roleManager:()=>this.state.identityRole==='superadmin' && this.setState({role:'manager',view:(v==='users'||v==='security')?'dashboard':v}),
-      roleExec:()=>this.state.identityRole==='superadmin' && this.setState({role:'executive',view:(v==='account')?'account':'dashboard',panelId:null,editMode:false,draft:null}),
-      roleIt:()=>this.state.identityRole==='superadmin' && this.setState({role:'itadmin',view:(v==='account')?'account':'users',panelId:null,editMode:false,draft:null}),
+      roleSales:()=>(this.state.identityRole==='superadmin' || this.isDemo) && this.setState({role:'sales',panelId:null,view:(v==='approvals'||v==='users'||v==='security')?'dashboard':v}),
+      roleManager:()=>(this.state.identityRole==='superadmin' || this.isDemo) && this.setState({role:'manager',view:(v==='users'||v==='security')?'dashboard':v}),
+      roleExec:()=>(this.state.identityRole==='superadmin' || this.isDemo) && this.setState({role:'executive',view:(v==='account')?'account':'dashboard',panelId:null,editMode:false,draft:null}),
+      roleIt:()=>(this.state.identityRole==='superadmin' || this.isDemo) && this.setState({role:'itadmin',view:(v==='account')?'account':'users',panelId:null,editMode:false,draft:null}),
       segSales:this.segStyle('sales'), segManager:this.segStyle('manager'), segExec:this.segStyle('executive'), segIt:this.segStyle('itadmin'),
       isExec, canEdit,
       roleTitle:roleTitles[r], roleNote:roleNotes[r],
