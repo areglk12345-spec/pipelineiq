@@ -2260,7 +2260,16 @@ class Component extends DCLogic {
   // so a relative path is always correct — no origin to hardcode.
   API_BASE = window.__API_BASE__ || '';
 
+  // "Show Demo" never creates a session (no /auth/login call), so this guard
+  // is defense in depth, not the only thing stopping demo mode from touching
+  // real data — it exists in case a browser still holds a real session
+  // cookie from a prior real login when someone clicks into the demo.
   async api(path, opts = {}) {
+    if (this.isDemo) {
+      const err = new Error('โหมดทดลองใช้งาน — ไม่มีการเชื่อมต่อระบบจริง');
+      err.status = 0;
+      throw err;
+    }
     const res = await fetch(this.API_BASE + path, {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
@@ -2280,6 +2289,11 @@ class Component extends DCLogic {
   // this.api() always forces Content-Type: application/json, which breaks
   // multipart boundaries — file uploads need their own thin wrapper.
   async uploadFile(path, fieldName, file) {
+    if (this.isDemo) {
+      const err = new Error('โหมดทดลองใช้งาน — ไม่มีการเชื่อมต่อระบบจริง');
+      err.status = 0;
+      throw err;
+    }
     const fd = new FormData();
     fd.append(fieldName, file);
     const res = await fetch(this.API_BASE + path, { method: 'POST', credentials: 'include', body: fd });
@@ -2494,6 +2508,37 @@ class Component extends DCLogic {
     this.setState({});
   }
 
+  // "Show Demo" walkthrough — entirely local, never touches the backend (see
+  // isDemo guard in api()/uploadFile() above). Names/companies are fictional
+  // placeholders, distinct from any seeded or real account, so nobody can
+  // mistake this for real data. Field shapes match normalizeDeal()/
+  // normalizeCustomer() output and the raw /users, /users/directory shapes.
+  // Each list is its own independent literal (not derived from another
+  // field) — a field initializer that read another field via `this.` here
+  // previously crashed Component construction on first render.
+  isDemo = false;
+  demoUsersList = [
+    { id:'demo-mgr', name:'(ตัวอย่าง) มานพ ผู้จัดการ', email:'demo.manager@example.com', role:'manager', perms:{addDeal:true,editDeal:true,delDeal:true,addUser:false,grantAdmin:false}, two_fa_enabled:true, must_change_password:false, created_at:'2026-01-01T00:00:00.000Z' },
+    { id:'demo-s1', name:'(ตัวอย่าง) พลอย ฝ่ายขาย', email:'demo.sales1@example.com', role:'sales', perms:{addDeal:true,editDeal:true,delDeal:false,addUser:false,grantAdmin:false}, two_fa_enabled:false, must_change_password:false, created_at:'2026-01-01T00:00:00.000Z' },
+    { id:'demo-s2', name:'(ตัวอย่าง) ก้อง ฝ่ายขาย', email:'demo.sales2@example.com', role:'sales', perms:{addDeal:true,editDeal:false,delDeal:false,addUser:false,grantAdmin:false}, two_fa_enabled:false, must_change_password:false, created_at:'2026-01-01T00:00:00.000Z' },
+  ];
+  demoUserDirectory = [
+    { id:'demo-mgr', name:'(ตัวอย่าง) มานพ ผู้จัดการ', role:'manager' },
+    { id:'demo-s1', name:'(ตัวอย่าง) พลอย ฝ่ายขาย', role:'sales' },
+    { id:'demo-s2', name:'(ตัวอย่าง) ก้อง ฝ่ายขาย', role:'sales' },
+  ];
+  demoCustomers = [
+    { id:'demo-cust-1', code:'DC-001', name:'(ตัวอย่าง) บริษัท ทดลอง จำกัด', type:'Corporate', poc:'คุณสมมติ ใจดี', address:'123 ถนนตัวอย่าง กรุงเทพฯ', note:'ลูกค้าตัวอย่างสำหรับสาธิตระบบ', locationUrl:'', phones:['02-000-0000'], phone:'02-000-0000', email:'contact@demo-example.co.th', taxId:'0000000000000', caretakers:[], projects:[] },
+    { id:'demo-cust-2', code:'DC-002', name:'(ตัวอย่าง) ห้างหุ้นส่วน สาธิต จำกัด', type:'SME', poc:'คุณตัวอย่าง มั่งมี', address:'456 ถนนสาธิต เชียงใหม่', note:'', locationUrl:'', phones:['053-000-000'], phone:'053-000-000', email:'info@sathit-demo.co.th', taxId:'0000000000001', caretakers:[], projects:[] },
+  ];
+  demoDeals = [
+    { id:'demo-deal-1', orgCode:'DC-001', company:'(ตัวอย่าง) บริษัท ทดลอง จำกัด', poc:'คุณสมมติ ใจดี', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'contact@demo-example.co.th', phone:'02-000-0000', project:'ระบบ CRM สาธิต', service:'Software', value:850000, tor:null, competitor:'', other:'', reason:'', status:'lead', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-2', orgCode:'DC-001', company:'(ตัวอย่าง) บริษัท ทดลอง จำกัด', poc:'คุณสมมติ ใจดี', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'contact@demo-example.co.th', phone:'02-000-0000', project:'ระบบ Turnkey สาธิต', service:'Turnkey', value:1200000, tor:null, competitor:'คู่แข่ง เอ', other:'', reason:'', status:'proposal', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-3', orgCode:'DC-002', company:'(ตัวอย่าง) ห้างหุ้นส่วน สาธิต จำกัด', poc:'คุณตัวอย่าง มั่งมี', position:'เจ้าของกิจการ', email:'info@sathit-demo.co.th', phone:'053-000-000', project:'ระบบ MA สาธิต', service:'MA', value:430000, tor:null, competitor:'', other:'', reason:'', status:'bidding', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-4', orgCode:'DC-002', company:'(ตัวอย่าง) ห้างหุ้นส่วน สาธิต จำกัด', poc:'คุณตัวอย่าง มั่งมี', position:'เจ้าของกิจการ', email:'info@sathit-demo.co.th', phone:'053-000-000', project:'ระบบ CRM สาธิต 2', service:'Software', value:610000, tor:null, competitor:'', other:'', reason:'', status:'won', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-5', orgCode:'DC-001', company:'(ตัวอย่าง) บริษัท ทดลอง จำกัด', poc:'คุณสมมติ ใจดี', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'contact@demo-example.co.th', phone:'02-000-0000', project:'ระบบ Support สาธิต', service:'Software', value:150000, tor:null, competitor:'', other:'', reason:'งบประมาณไม่ผ่าน', status:'lost', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+  ];
+
   // Real accounts now live in the backend (Postgres via the Phase-1 auth API).
   // Populated by refreshUsers(); see users/routes.ts on the backend.
   usersList = [];
@@ -2705,6 +2750,7 @@ class Component extends DCLogic {
       loginPwShown:this.state.loginPwVisible,
       toggleLoginPw:()=>this.setState({loginPwVisible:!this.state.loginPwVisible}),
       doLogin:async ()=>{
+        this.isDemo = false;
         try {
           const body = await this.api('/auth/login', { method:'POST', body: JSON.stringify({ email:this.state.loginUser, password:this.state.loginPw }) });
           if (body.needs2faSetup) {
@@ -2786,7 +2832,9 @@ class Component extends DCLogic {
       resendLabel:this.state.otpResent?'ส่งรหัสใหม่แล้ว ✓':'ส่งรหัสอีกครั้ง',
       quickAccounts:[],
       logout:async ()=>{
-        try { await this.api('/auth/logout', { method:'POST' }); } catch {}
+        const wasDemo = this.isDemo;
+        this.isDemo = false;
+        if (!wasDemo) { try { await this.api('/auth/logout', { method:'POST' }); } catch {} }
         // usersList/regRequests/securitySettings/approvals/deals/customers/
         // userDirectory/profileDraft are class fields, not `state` — clear
         // them explicitly, or the next login in this same tab (a different,
@@ -2806,8 +2854,8 @@ class Component extends DCLogic {
       },
       isLoginMode:this.state.loginMode==='login' && !this.state.otpStage,
       isRegisterMode:this.state.loginMode==='register' && !this.state.otpStage,
-      goRegister:()=>this.setState({loginMode:'register', regDone:false, loginError:false, regFirstName:'', regLastName:'', regEmail:'', regPassword:'', regConfirm:''}),
-      goLoginMode:()=>this.setState({loginMode:'login', regDone:false}),
+      goRegister:()=>{ this.isDemo=false; this.setState({loginMode:'register', regDone:false, loginError:false, regFirstName:'', regLastName:'', regEmail:'', regPassword:'', regConfirm:''}); },
+      goLoginMode:()=>{ this.isDemo=false; this.setState({loginMode:'login', regDone:false}); },
       regDone:this.state.regDone,
       regNotDone:!this.state.regDone,
       regFirstName:this.state.regFirstName||'', onRegFirstName:(e)=>this.setState({regFirstName:e.target.value}),
@@ -2849,7 +2897,16 @@ class Component extends DCLogic {
           alert('ส่งคำขอไม่สำเร็จ: '+err.message+details);
         }
       },
-      demoLogin:()=>this.setState({loggedIn:true, role:'manager', loginRole:'manager', loginError:false, view:'dashboard', panelId:null, editMode:false, draft:null}),
+      demoLogin:()=>{
+        this.isDemo = true;
+        this.usersList = this.demoUsersList;
+        this.userDirectory = this.demoUserDirectory;
+        this.customers = this.demoCustomers;
+        this.deals = this.demoDeals;
+        this.approvals = [];
+        this.auditLog = [];
+        this.setState({loggedIn:true, role:'manager', loginRole:'manager', identityId:this.demoUsersList[0].id, identityRole:'manager', identityName:this.demoUsersList[0].name, identityEmail:this.demoUsersList[0].email, identityPerms:this.demoUsersList[0].perms, loginError:false, view:'dashboard', panelId:null, editMode:false, draft:null});
+      },
       // Only a real superadmin identity may use the role-switcher below to
       // preview other roles' screens; the backend never trusts state.role
       // for authorization (every mutating request re-checks the real
