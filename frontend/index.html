@@ -2546,6 +2546,13 @@ class Component extends DCLogic {
   demoCustomers = [
     { id:'demo-cust-1', code:'DC-001', name:'(ตัวอย่าง) บริษัท ทดลอง จำกัด', type:'Corporate', poc:'คุณสมมติ ใจดี', address:'123 ถนนตัวอย่าง กรุงเทพฯ', note:'ลูกค้าตัวอย่างสำหรับสาธิตระบบ', locationUrl:'', phones:['02-000-0000'], phone:'02-000-0000', email:'contact@demo-example.co.th', taxId:'0000000000000', caretakers:[], projects:[] },
     { id:'demo-cust-2', code:'DC-002', name:'(ตัวอย่าง) ห้างหุ้นส่วน สาธิต จำกัด', type:'SME', poc:'คุณตัวอย่าง มั่งมี', address:'456 ถนนสาธิต เชียงใหม่', note:'', locationUrl:'', phones:['053-000-000'], phone:'053-000-000', email:'info@sathit-demo.co.th', taxId:'0000000000001', caretakers:[], projects:[] },
+    // DC-003..032 exist so the demo's "Account Coverage" KPI (customers.length
+    // vs. the 50-company target) has a realistic number to show — most of
+    // these don't have an active deal, same as a real book of accounts.
+    ...Array.from({length:30}, (_,i)=>{
+      const n=i+3, code='DC-'+String(n).padStart(3,'0');
+      return { id:'demo-cust-'+n, code, name:'(ตัวอย่าง) บริษัท สาธิต '+n+' จำกัด', type:(n%2===0?'Corporate':'SME'), poc:'คุณตัวอย่าง ลูกค้า'+n, address:'เลขที่ '+(100+n)+' ถนนสาธิต กรุงเทพฯ', note:'', locationUrl:'', phones:['02-'+String(1000+n).padStart(4,'0')+'-0000'], phone:'02-'+String(1000+n).padStart(4,'0')+'-0000', email:'demo'+n+'@example.co.th', taxId:'000000000'+String(n).padStart(4,'0'), caretakers:[], projects:[] };
+    }),
   ];
   demoDeals = [
     { id:'demo-deal-1', orgCode:'DC-001', company:'(ตัวอย่าง) บริษัท ทดลอง จำกัด', poc:'คุณสมมติ ใจดี', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'contact@demo-example.co.th', phone:'02-000-0000', project:'ระบบ CRM สาธิต', service:'Software', value:850000, tor:null, competitor:'', other:'', reason:'', status:'lead', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
@@ -2553,6 +2560,19 @@ class Component extends DCLogic {
     { id:'demo-deal-3', orgCode:'DC-002', company:'(ตัวอย่าง) ห้างหุ้นส่วน สาธิต จำกัด', poc:'คุณตัวอย่าง มั่งมี', position:'เจ้าของกิจการ', email:'info@sathit-demo.co.th', phone:'053-000-000', project:'ระบบ MA สาธิต', service:'MA', value:430000, tor:null, competitor:'', other:'', reason:'', status:'bidding', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
     { id:'demo-deal-4', orgCode:'DC-002', company:'(ตัวอย่าง) ห้างหุ้นส่วน สาธิต จำกัด', poc:'คุณตัวอย่าง มั่งมี', position:'เจ้าของกิจการ', email:'info@sathit-demo.co.th', phone:'053-000-000', project:'ระบบ CRM สาธิต 2', service:'Software', value:610000, tor:null, competitor:'', other:'', reason:'', status:'won', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
     { id:'demo-deal-5', orgCode:'DC-001', company:'(ตัวอย่าง) บริษัท ทดลอง จำกัด', poc:'คุณสมมติ ใจดี', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'contact@demo-example.co.th', phone:'02-000-0000', project:'ระบบ Support สาธิต', service:'Software', value:150000, tor:null, competitor:'', other:'', reason:'งบประมาณไม่ผ่าน', status:'lost', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    // Deals 6-15: adds the "strategic" (20-50M) tier and rounds out win/loss
+    // counts so the demo's KPI cards (Win Rate, Strategic Target, Account
+    // Coverage) compute realistic numbers from this data, same as prod.
+    { id:'demo-deal-6', orgCode:'DC-003', company:'(ตัวอย่าง) บริษัท สาธิต 3 จำกัด', poc:'คุณตัวอย่าง ลูกค้า3', position:'ผู้อำนวยการฝ่ายจัดซื้อ', email:'demo3@example.co.th', phone:'02-1003-0000', project:'ระบบ Enterprise CRM สาขาทั่วประเทศ', service:'Turnkey', value:45000000, tor:null, competitor:'', other:'', reason:'', status:'won', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-7', orgCode:'DC-004', company:'(ตัวอย่าง) บริษัท สาธิต 4 จำกัด', poc:'คุณตัวอย่าง ลูกค้า4', position:'ผู้จัดการฝ่ายไอที', email:'demo4@example.co.th', phone:'02-1004-0000', project:'ระบบ Turnkey โครงสร้างพื้นฐาน', service:'Turnkey', value:38500000, tor:null, competitor:'', other:'', reason:'', status:'won', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-8', orgCode:'DC-005', company:'(ตัวอย่าง) บริษัท สาธิต 5 จำกัด', poc:'คุณตัวอย่าง ลูกค้า5', position:'ประธานเจ้าหน้าที่บริหาร', email:'demo5@example.co.th', phone:'02-1005-0000', project:'ระบบ MA ดูแลระบบรายปี', service:'MA', value:28000000, tor:null, competitor:'', other:'', reason:'', status:'won', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-9', orgCode:'DC-006', company:'(ตัวอย่าง) บริษัท สาธิต 6 จำกัด', poc:'คุณตัวอย่าง ลูกค้า6', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'demo6@example.co.th', phone:'02-1006-0000', project:'ระบบ Software จัดการเอกสาร', service:'Software', value:320000, tor:null, competitor:'คู่แข่ง บี', other:'', reason:'เลือกผู้ให้บริการรายอื่น', status:'lost', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-10', orgCode:'DC-007', company:'(ตัวอย่าง) บริษัท สาธิต 7 จำกัด', poc:'คุณตัวอย่าง ลูกค้า7', position:'ผู้อำนวยการฝ่ายจัดซื้อ', email:'demo7@example.co.th', phone:'02-1007-0000', project:'ระบบ Turnkey ศูนย์ข้อมูล', service:'Turnkey', value:32000000, tor:null, competitor:'', other:'', reason:'', status:'bidding', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-11', orgCode:'DC-008', company:'(ตัวอย่าง) บริษัท สาธิต 8 จำกัด', poc:'คุณตัวอย่าง ลูกค้า8', position:'ผู้จัดการฝ่ายไอที', email:'demo8@example.co.th', phone:'02-1008-0000', project:'ระบบ MA ดูแลระบบเครือข่าย', service:'MA', value:25000000, tor:null, competitor:'', other:'', reason:'', status:'proposal', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-12', orgCode:'DC-009', company:'(ตัวอย่าง) บริษัท สาธิต 9 จำกัด', poc:'คุณตัวอย่าง ลูกค้า9', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'demo9@example.co.th', phone:'02-1009-0000', project:'ระบบ CRM สาขาย่อย', service:'Software', value:700000, tor:null, competitor:'', other:'', reason:'', status:'lead', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-13', orgCode:'DC-010', company:'(ตัวอย่าง) บริษัท สาธิต 10 จำกัด', poc:'คุณตัวอย่าง ลูกค้า10', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'demo10@example.co.th', phone:'02-1010-0000', project:'ระบบ CRM ทีมขาย', service:'Software', value:950000, tor:null, competitor:'', other:'', reason:'', status:'lead', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-14', orgCode:'DC-011', company:'(ตัวอย่าง) บริษัท สาธิต 11 จำกัด', poc:'คุณตัวอย่าง ลูกค้า11', position:'ผู้จัดการฝ่ายไอที', email:'demo11@example.co.th', phone:'02-1011-0000', project:'ระบบ Turnkey สาขาใหม่', service:'Turnkey', value:1500000, tor:null, competitor:'', other:'', reason:'', status:'proposal', crm:'', sales:'(ตัวอย่าง) พลอย ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s1', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
+    { id:'demo-deal-15', orgCode:'DC-012', company:'(ตัวอย่าง) บริษัท สาธิต 12 จำกัด', poc:'คุณตัวอย่าง ลูกค้า12', position:'ผู้จัดการฝ่ายจัดซื้อ', email:'demo12@example.co.th', phone:'02-1012-0000', project:'ระบบ MA ต่อสัญญาปีที่ 2', service:'MA', value:600000, tor:null, competitor:'', other:'', reason:'', status:'bidding', crm:'', sales:'(ตัวอย่าง) ก้อง ฝ่ายขาย', turnkey:'', ma:'', crmUserId:null, salesUserId:'demo-s2', turnkeyUserId:null, maUserId:null, logs:[], plan:[] },
   ];
 
   // Real accounts now live in the backend (Postgres via the Phase-1 auth API).
@@ -2696,12 +2716,11 @@ class Component extends DCLogic {
 
   pipelineTotal(){ return this.fmtFull(this.scoped().reduce((a,d)=>a+d.value,0)); }
 
-  // "Account Coverage" — companies with at least one active deal, against a
-  // fixed 50-company outreach target (a sales goal, not something derived
-  // from data).
+  // "Account Coverage" — customer accounts already in the CRM (whether or
+  // not they have an open deal yet), against a fixed 50-company outreach
+  // target (a sales goal, not something derived from data).
   coverageStats(){
-    const ds=this.scoped();
-    const covered=new Set(ds.map(d=>d.orgCode).filter(Boolean)).size;
+    const covered=this.customers.length;
     const target=50;
     const pct=Math.round((covered/target)*100);
     const circumference=326.7;
