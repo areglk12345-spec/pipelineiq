@@ -819,13 +819,13 @@
             <div style="display:flex;align-items:center;gap:22px">
               <svg width="132" height="132" sc-camel-view-box="0 0 132 132" style="flex:none">
                 <circle cx="66" cy="66" r="52" fill="none" stroke="#eef1f6" stroke-width="14"></circle>
-                <circle cx="66" cy="66" r="52" fill="none" stroke="#2f5fe0" stroke-width="14" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="117.6" transform="rotate(-90 66 66)"></circle>
-                <text x="66" y="62" text-anchor="middle" font-family="IBM Plex Sans" font-size="27" font-weight="700" fill="#0f1b2d">64%</text>
-                <text x="66" y="82" text-anchor="middle" font-family="IBM Plex Sans" font-size="12" font-weight="500" fill="#94a1b3">32 / 50</text>
+                <circle cx="66" cy="66" r="52" fill="none" stroke="#2f5fe0" stroke-width="14" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="{{ coverage.dashoffset }}" transform="rotate(-90 66 66)"></circle>
+                <text x="66" y="62" text-anchor="middle" font-family="IBM Plex Sans" font-size="27" font-weight="700" fill="#0f1b2d">{{ coverage.pct }}%</text>
+                <text x="66" y="82" text-anchor="middle" font-family="IBM Plex Sans" font-size="12" font-weight="500" fill="#94a1b3">{{ coverage.covered }} / {{ coverage.target }}</text>
               </svg>
               <div style="display:flex;flex-direction:column;gap:12px">
-                <div><div style="font-size:22px;font-weight:700;color:#0f1b2d;font-family:'IBM Plex Sans'">32</div><div style="font-size:11.5px;color:#94a1b3">บริษัทในความดูแล</div></div>
-                <div><div style="font-size:22px;font-weight:700;color:#c9963b;font-family:'IBM Plex Sans'">18</div><div style="font-size:11.5px;color:#94a1b3">คงเหลือถึงเป้า</div></div>
+                <div><div style="font-size:22px;font-weight:700;color:#0f1b2d;font-family:'IBM Plex Sans'">{{ coverage.covered }}</div><div style="font-size:11.5px;color:#94a1b3">บริษัทในความดูแล</div></div>
+                <div><div style="font-size:22px;font-weight:700;color:#c9963b;font-family:'IBM Plex Sans'">{{ coverage.remaining }}</div><div style="font-size:11.5px;color:#94a1b3">คงเหลือถึงเป้า</div></div>
               </div>
             </div>
           </div>
@@ -841,13 +841,13 @@
             </div>
             <div style="font-size:11.5px;color:#a9bad6;margin-bottom:14px">ดีลที่ปิดได้ (Won) มูลค่า 20–50 ล้านบาท</div>
             <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:16px">
-              <span style="font-size:52px;font-weight:700;line-height:.9;font-family:'IBM Plex Sans'">3</span>
-              <span style="font-size:20px;font-weight:600;color:#a9bad6;padding-bottom:7px">/ 5 โครงการ</span>
+              <span style="font-size:52px;font-weight:700;line-height:.9;font-family:'IBM Plex Sans'">{{ strategic.wonCount }}</span>
+              <span style="font-size:20px;font-weight:600;color:#a9bad6;padding-bottom:7px">/ {{ strategic.totalCount }} โครงการ</span>
             </div>
             <div style="display:flex;flex-direction:column;gap:7px">
-              <div style="display:flex;justify-content:space-between;font-size:12px;background:rgba(255,255,255,.07);border-radius:8px;padding:7px 11px"><span style="color:#dbe4f2">การไฟฟ้าส่วนภูมิภาค (PEA)</span><span style="font-weight:600;color:#ffe6b0;font-family:'IBM Plex Sans'">฿45.0M</span></div>
-              <div style="display:flex;justify-content:space-between;font-size:12px;background:rgba(255,255,255,.07);border-radius:8px;padding:7px 11px"><span style="color:#dbe4f2">บมจ. ปตท.</span><span style="font-weight:600;color:#ffe6b0;font-family:'IBM Plex Sans'">฿38.5M</span></div>
-              <div style="display:flex;justify-content:space-between;font-size:12px;background:rgba(255,255,255,.07);border-radius:8px;padding:7px 11px"><span style="color:#dbe4f2">ธนาคารกรุงไทย</span><span style="font-weight:600;color:#ffe6b0;font-family:'IBM Plex Sans'">฿28.0M</span></div>
+              <sc-for list="{{ strategic.items }}" as="item" hint-placeholder-count="0">
+                <div style="display:flex;justify-content:space-between;font-size:12px;background:rgba(255,255,255,.07);border-radius:8px;padding:7px 11px"><span style="color:#dbe4f2">{{ item.company }}</span><span style="font-weight:600;color:#ffe6b0;font-family:'IBM Plex Sans'">{{ item.valueFmt }}</span></div>
+              </sc-for>
             </div>
           </div>
 
@@ -858,17 +858,17 @@
             <div style="display:flex;flex-direction:column;align-items:center">
               <svg width="196" height="118" sc-camel-view-box="0 0 196 118">
                 <path d="M22 100 A76 76 0 0 1 174 100" fill="none" stroke="#eef1f6" stroke-width="16" stroke-linecap="round"></path>
-                <path d="M22 100 A76 76 0 0 1 174 100" fill="none" stroke="#16a34a" stroke-width="16" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="78.8"></path>
-                <text x="98" y="86" text-anchor="middle" font-family="IBM Plex Sans" font-size="34" font-weight="700" fill="#0f1b2d">67%</text>
+                <path d="M22 100 A76 76 0 0 1 174 100" fill="none" stroke="#16a34a" stroke-width="16" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="{{ winRate.dashoffset }}"></path>
+                <text x="98" y="86" text-anchor="middle" font-family="IBM Plex Sans" font-size="34" font-weight="700" fill="#0f1b2d">{{ winRate.pct }}%</text>
                 <text x="22" y="116" text-anchor="middle" font-family="IBM Plex Sans" font-size="11" fill="#b3bdcb">0%</text>
                 <text x="174" y="116" text-anchor="middle" font-family="IBM Plex Sans" font-size="11" fill="#b3bdcb">100%</text>
               </svg>
               <div style="display:flex;gap:26px;margin-top:8px">
-                <div style="text-align:center"><div style="font-size:19px;font-weight:700;color:#16a34a;font-family:'IBM Plex Sans'">4</div><div style="font-size:11px;color:#94a1b3">ปิดได้</div></div>
+                <div style="text-align:center"><div style="font-size:19px;font-weight:700;color:#16a34a;font-family:'IBM Plex Sans'">{{ winRate.won }}</div><div style="font-size:11px;color:#94a1b3">ปิดได้</div></div>
                 <div style="width:1px;background:#e8edf3"></div>
-                <div style="text-align:center"><div style="font-size:19px;font-weight:700;color:#dc2626;font-family:'IBM Plex Sans'">2</div><div style="font-size:11px;color:#94a1b3">พลาด</div></div>
+                <div style="text-align:center"><div style="font-size:19px;font-weight:700;color:#dc2626;font-family:'IBM Plex Sans'">{{ winRate.lost }}</div><div style="font-size:11px;color:#94a1b3">พลาด</div></div>
                 <div style="width:1px;background:#e8edf3"></div>
-                <div style="text-align:center"><div style="font-size:19px;font-weight:700;color:#0f1b2d;font-family:'IBM Plex Sans'">15</div><div style="font-size:11px;color:#94a1b3">ดีลทั้งหมด</div></div>
+                <div style="text-align:center"><div style="font-size:19px;font-weight:700;color:#0f1b2d;font-family:'IBM Plex Sans'">{{ winRate.total }}</div><div style="font-size:11px;color:#94a1b3">ดีลทั้งหมด</div></div>
               </div>
             </div>
           </div>
@@ -883,7 +883,7 @@
             </div>
             <div style="text-align:right">
               <div style="font-size:11.5px;color:#94a1b3">มูลค่ารวมในไปป์ไลน์</div>
-              <div style="font-size:22px;font-weight:700;color:#0f1b2d;font-family:'IBM Plex Sans'">฿200,500,000</div>
+              <div style="font-size:22px;font-weight:700;color:#0f1b2d;font-family:'IBM Plex Sans'">{{ pipelineTotal }}</div>
             </div>
           </div>
 
@@ -2694,6 +2694,45 @@ class Component extends DCLogic {
     });
   }
 
+  pipelineTotal(){ return this.fmtFull(this.scoped().reduce((a,d)=>a+d.value,0)); }
+
+  // "Account Coverage" — companies with at least one active deal, against a
+  // fixed 50-company outreach target (a sales goal, not something derived
+  // from data).
+  coverageStats(){
+    const ds=this.scoped();
+    const covered=new Set(ds.map(d=>d.orgCode).filter(Boolean)).size;
+    const target=50;
+    const pct=Math.round((covered/target)*100);
+    const circumference=326.7;
+    return {
+      pct, covered, target, remaining: Math.max(target-covered,0),
+      dashoffset: (circumference*(1-Math.min(pct,100)/100)).toFixed(1),
+    };
+  }
+
+  // "โครงการเชิงกลยุทธ์" — deals worth 20-50M THB, won vs. total in that band.
+  strategicStats(){
+    const inRange=this.scoped().filter(d=>d.value>=20000000 && d.value<=50000000);
+    const won=inRange.filter(d=>d.status==='won').sort((a,b)=>b.value-a.value);
+    return {
+      wonCount:won.length, totalCount:inRange.length,
+      items: won.map(d=>({ company:d.company, valueFmt:this.fmtM(d.value) })),
+    };
+  }
+
+  winRateStats(){
+    const ds=this.scoped();
+    const won=ds.filter(d=>d.status==='won').length;
+    const lost=ds.filter(d=>d.status==='lost').length;
+    const pct=(won+lost)>0 ? Math.round((won/(won+lost))*100) : 0;
+    const dasharray=238.8;
+    return {
+      pct, won, lost, total: ds.length,
+      dashoffset: (dasharray*(1-Math.min(pct,100)/100)).toFixed(1),
+    };
+  }
+
   navStyle(v){
     const base='display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:9px;cursor:pointer;border:none;width:100%;text-align:left;font-size:13.5px;transition:.15s;font-family:inherit;';
     return this.state.view===v ? base+'background:#1b3a63;color:#8fb6f5;font-weight:600' : base+'background:transparent;color:#9aa7bd;font-weight:500';
@@ -3095,6 +3134,10 @@ class Component extends DCLogic {
       leadCount:this.cardsOf('lead').length, proposalCount:this.cardsOf('proposal').length, biddingCount:this.cardsOf('bidding').length, wonCount:this.cardsOf('won').length, lostCount:this.cardsOf('lost').length,
       leadTotal:this.totalOf('lead'), proposalTotal:this.totalOf('proposal'), biddingTotal:this.totalOf('bidding'), wonTotal:this.totalOf('won'), lostTotal:this.totalOf('lost'),
       funnelStages:this.buildFunnelStages(),
+      pipelineTotal:this.pipelineTotal(),
+      coverage:this.coverageStats(),
+      strategic:this.strategicStats(),
+      winRate:this.winRateStats(),
       // deals registry (บอร์ดไปป์ไลน์ in table form)
       dealSearch:this.state.dealSearch,
       onDealSearch:(e)=>this.setState({dealSearch:e.target.value}),
